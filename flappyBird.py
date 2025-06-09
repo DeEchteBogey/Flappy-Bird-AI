@@ -93,6 +93,88 @@ class Bird:
     def get_mask(self):
         return pygame.mask.from_surface(self.img)
     
+
+
+#Klasse voor de pijp
+class Pipe:
+    GAP = 200
+    VEL = 5
+
+    # constructor
+    def __init__(self,x):
+        self.x = x
+        self.height = 0
+
+        self.top = 0
+        self.bottom = 0
+        self.PIPE_TOP = pygame.transform.flip(PIPE_IMG, False, True)
+        self.PIPE_BOTTOM = PIPE_IMG
+
+        self.passed = False
+        self.set_height()
+
+    #Hoogte pijpen instellen
+    def set_height(self):
+        self.height = random.randrange(50,450)
+        self.top = self.height - self.PIPE_TOP.get_height()
+        self.bottom  = self.height + self.GAP
+
+    #Verplaats de pijpen
+    def move(self):
+        self.x -= self.VEL
+
+    # Tekent de pijpen
+    def draw(self,window):
+        window.blit(self.PIPE_TOP, (self.x, self.top))
+        window.blit(self.PIPE_BOTTOM, (self.x, self.bottom))
+
+    # Berekent collision met pijpen
+    def collide(self, bird):
+        bird_mask = bird.get_mask()
+        top_mask = pygame.mask.from_surface(self.PIPE_TOP)
+        bottom_mask = pygame.mask.from_surface(self.PIPE_BOTTOM)
+
+        # Berekent offset en kijkt of er overlap is zoja return true
+        top_offset = (self.x - bird.x, self.top - round(bird.y))
+        bottom_offset = (self.x - bird.x, self.bottom - round(bird.y))
+
+        b_point = bird_mask.overlap(bottom_mask, bottom_offset)
+        t_point = bird_mask.overlap(top_mask, top_offset)
+
+        if t_point or b_point:
+            return True
+        
+        return False
+    
+
+# Maakt de base van de game
+class Base:
+    VEL = 5
+    WIDTH = BASE_IMG.get_width()
+    IMG = BASE_IMG
+
+    def __init__(self,y):
+        self.y = y
+        self.x1 = 0
+        self.x2 = self.WIDTH
+
+    #Verplaats de base naar het begin als hij eindigt
+    def move(self):
+        self.x1 -= self.VEL
+        self.x2 -= self.VEL
+
+        if self.x1 + self.WIDTH < 0:
+            self.x1 = self.x2 + self.WIDTH
+
+        if self.x2 + self.WIDTH < 0:
+            self.x2 = self.x1 + self.WIDTH 
+
+    # Teken base
+    def draw(self, window):
+        window.blit(self.IMG, (self.x1, self.y))
+        window.blit(self.IMG, (self.x2, self.y))
+
+    
 # Maakt een pygame scherm
 def draw_window(window, bird):
     window.blit(BACKGROUND_IMG, (0,0))
